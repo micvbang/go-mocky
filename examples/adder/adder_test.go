@@ -1,7 +1,6 @@
 package adder_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -9,9 +8,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestGiveValueToAdderErrors verifies that GiveValueToAdder returns an error
+// TestReturnAddErrorErrors verifies that GiveValueToAdder returns an error
 // when Add fails, and returns nil Add does not fail.
-func TestGiveValueToAdderErrors(t *testing.T) {
+func TestReturnAddErrorErrors(t *testing.T) {
 	tests := map[string]struct {
 		expected error
 	}{
@@ -23,23 +22,23 @@ func TestGiveValueToAdderErrors(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mockAdder := adder.NewMockAdder(t)
 			// Here we're defining the functionality of the mock.
-			mockAdder.AddMock = func(ctx context.Context, value string) error {
+			mockAdder.AddMock = func() error {
 				return test.expected
 			}
 
-			const addValue = "value"
-			got := adder.GiveValueToAdder(mockAdder, addValue)
+			// Verify that GiveValueToAdder returns the error returned by Add
+			got := adder.ReturnAddError(mockAdder)
 			require.ErrorIs(t, got, test.expected)
 
-			// We can look into the calls that was made to Add, including
-			// which arguments were given and which values were returned:
+			// If we want to be fancy, we can even see the history of the calls made
+			// to Add, including which arguments were given and which values were returned:
 			require.Equal(t, 1, len(mockAdder.AddCalls))
 
-			// Named argument "Value"
-			require.Equal(t, mockAdder.AddCalls[0].Value, addValue)
+			// Add has no arguments, but if it had had, they would be available on `call` as well
+			call := mockAdder.AddCalls[0]
 
-			// Return value 0
-			require.ErrorIs(t, mockAdder.AddCalls[0].Out0, test.expected)
+			// Return value
+			require.ErrorIs(t, call.Out0, test.expected)
 		})
 	}
 }
