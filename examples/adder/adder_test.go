@@ -26,7 +26,7 @@ func TestReturnAddErrorErrors(t *testing.T) {
 				return test.expected
 			}
 
-			// Verify that GiveValueToAdder returns the error returned by Add
+			// Verify that ReturnAddError returns the error returned by Add
 			got := adder.ReturnAddError(mockAdder)
 			require.ErrorIs(t, got, test.expected)
 

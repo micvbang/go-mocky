@@ -65,8 +65,6 @@ That's it! We're now ready to mock Adder.
 
 Below there's a silly function called `ReturnAddError` which does nothing useful except returning the error returned by `Add`.
 
-Since we have generated a mock for the `Adder` interface, we can easily write a test that verifies that it does indeed return the errors returned by `Add`.
-
 ```go
 func ReturnAddError(a Adder) error {
 	err := a.Add()
@@ -77,6 +75,8 @@ func ReturnAddError(a Adder) error {
 	return nil
 }
 ```
+
+Since we have generated a mock for the `Adder` interface, we can easily write a test that verifies that it does indeed return the errors returned by `Add`.
 
 ```go
 
@@ -98,7 +98,7 @@ func TestReturnAddErrorErrors(t *testing.T) {
 				return test.expected
 			}
 
-			// Verify that GiveValueToAdder returns the error returned by Add
+			// Verify that ReturnAddError returns the error returned by Add
 			got := adder.ReturnAddError(mockAdder)
 			require.ErrorIs(t, got, test.expected)
 
