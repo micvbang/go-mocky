@@ -12,5 +12,8 @@ func main() {
 		log.Fatalf("failed to parse flags: %s", err)
 	}
 
-	mocky.Run(flags)
+	err = mocky.Run(flags)
+	if err != nil {
+		log.Fatalf("failed to generate mocks: %s", err)
+	}
 }
