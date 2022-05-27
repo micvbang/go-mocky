@@ -33,26 +33,10 @@ func Generate(wtr io.Writer, c Interface) error {
 			return i < len(vs)-1
 		},
 		"Untitle": func(s string) string {
-			if len(s) == 0 {
-				return s
-			}
-
-			r := rune(s[0])
-			if !unicode.IsUpper(r) && !unicode.IsLower(r) {
-				return s
-			}
-			return string(unicode.ToLower(r)) + s[1:]
+			return titleCasing(s, unicode.ToLower)
 		},
 		"Title": func(s string) string {
-			if len(s) == 0 {
-				return s
-			}
-
-			r := rune(s[0])
-			if !unicode.IsUpper(r) && !unicode.IsLower(r) {
-				return s
-			}
-			return string(unicode.ToUpper(r)) + s[1:]
+			return titleCasing(s, unicode.ToUpper)
 		},
 	}
 	tmpl, err := template.New("mocky").Funcs(funcs).Parse(mockTemplate)
@@ -80,6 +64,19 @@ func Generate(wtr io.Writer, c Interface) error {
 		tot += n
 	}
 	return nil
+}
+
+// titleCasing uses runeCaser to set the casing of the first letter of s.
+func titleCasing(s string, runeCaser func(rune) rune) string {
+	if len(s) == 0 {
+		return s
+	}
+
+	r := rune(s[0])
+	if !unicode.IsUpper(r) && !unicode.IsLower(r) {
+		return s
+	}
+	return string(runeCaser(r)) + s[1:]
 }
 
 var mockTemplate = `package {{ .PackageName }}
