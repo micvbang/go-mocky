@@ -1,6 +1,8 @@
 # go-mocky
 
-`go-mocky` makes it easy to generate fakes/mocks from Go interfaces. `go-mocky` is heavily inspired by <https://github.com/vektra/mockery>.
+`go-mocky` makes it easy to generate fakes/mocks from Go interfaces.
+
+`go-mocky` is heavily inspired by <https://github.com/vektra/mockery>.
 
 ## Goals
 
@@ -119,3 +121,6 @@ func TestReturnAddErrorErrors(t *testing.T) {
 The test shows how simple it is to define a mock/fake implementation of `Add()` to be used in our test.
 
 If you're into tracking the number of calls (or the arguments/return values), `go-mocky` helps you by keeping a log of these in the `AddCalls` slice.
+
+## License
+This project is Apache 2 licensed. See LICENSE for the full license text.
