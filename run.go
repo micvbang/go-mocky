@@ -9,14 +9,14 @@ import (
 	"strings"
 )
 
-func Run(flags Flags) {
+func Run(flags Flags) error {
 	if flags.OutputPath == nil {
 		flags.OutputPath = DefaultOutputPath
 	}
 
 	interfaces, err := Parse(flags.InterfaceDir)
 	if err != nil {
-		log.Fatalf("failed to parse dir %s: %s", flags.InterfaceDir, err)
+		return fmt.Errorf("failed to parse dir %s: %w", flags.InterfaceDir, err)
 	}
 
 	var ifaceToGenerate *Interface
@@ -27,7 +27,7 @@ func Run(flags Flags) {
 		}
 	}
 	if ifaceToGenerate == nil {
-		log.Fatalf("interface '%s' not found", flags.InterfaceName)
+		return fmt.Errorf("interface '%s' not found", flags.InterfaceName)
 	}
 
 	fpath := flags.OutputPath(flags)
@@ -35,14 +35,15 @@ func Run(flags Flags) {
 
 	f, err := os.Create(fpath)
 	if err != nil {
-		log.Fatalf("failed to open file %s: %s", fpath, err)
+		return fmt.Errorf("failed to open file %s: %w", fpath, err)
 	}
 	defer f.Close()
 
 	err = Generate(f, *ifaceToGenerate)
 	if err != nil {
-		log.Fatalf("failed to generate: %s", err)
+		return fmt.Errorf("failed to generate: %w", err)
 	}
+	return nil
 }
 
 func DefaultOutputPath(f Flags) string {
