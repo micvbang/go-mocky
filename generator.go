@@ -105,7 +105,7 @@ type {{ $method.Name | Untitle }}Call struct {
 
 func (v *Mock{{$iname}}) {{ $method.Name }}({{ range $arg := $method.Args }}{{$arg.Name}} {{$arg.Type}},{{ end }})({{ range $ret := $method.Returns }}{{$ret.Name}} {{$ret.Type}}, {{ end }}) {
 	if v.{{$method.Name}}Mock == nil {
-		msg := "call to {{$method.Name}}, but Mock{{$method.Name}} is not set"
+		msg := fmt.Sprintf("call to %T.{{$method.Name}}, but Mock{{$method.Name}} is not set", v)
 		if v.T == nil {
 			panic(msg)
 		}
