@@ -27,7 +27,7 @@ func Parse(dir string) ([]Interface, error) {
 	}
 	fpaths := make([]string, 0, len(files))
 	for _, file := range files {
-		if !file.IsDir() {
+		if !file.IsDir() && filepath.Ext(file.Name()) == ".go" {
 			fpaths = append(fpaths, filepath.Join(dir, file.Name()))
 		}
 	}
