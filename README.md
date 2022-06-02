@@ -49,7 +49,7 @@ type addCall struct {
 
 func (v *MockAdder) Add() error {
 	if v.AddMock == nil {
-		msg := "call to Add, but MockAdd is not set"
+		msg := fmt.Sprintf("call to %T.Add, but MockAdd is not set", v)
 		if v.T == nil {
 			panic(msg)
 		}
@@ -123,4 +123,5 @@ The test shows how simple it is to define a mock/fake implementation of `Add()` 
 If you're into tracking the number of calls (or the arguments/return values), `go-mocky` helps you by keeping a log of these in the `AddCalls` slice.
 
 ## License
+
 This project is Apache 2 licensed. See LICENSE for the full license text.

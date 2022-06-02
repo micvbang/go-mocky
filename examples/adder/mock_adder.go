@@ -1,6 +1,7 @@
 package adder
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -23,7 +24,7 @@ type addCall struct {
 
 func (v *MockAdder) Add() error {
 	if v.AddMock == nil {
-		msg := "call to Add, but MockAdd is not set"
+		msg := fmt.Sprintf("call to %T.Add, but MockAdd is not set", v)
 		if v.T == nil {
 			panic(msg)
 		}
