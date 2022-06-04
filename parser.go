@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/micvbang/go-helpy/filey"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -86,13 +85,18 @@ func getProjectRootDir(fpath string) (string, error) {
 
 	dir := filepath.Dir(fpath)
 	for len(dir) > 1 {
-		if filey.Exists(path.Join(dir, gomodFileName)) {
+		if fileExists(path.Join(dir, gomodFileName)) {
 			return dir, nil
 		}
 		dir = filepath.Dir(dir)
 	}
 
 	return "", fmt.Errorf("failed to find project root path: %w", os.ErrNotExist)
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
 }
 
 type NodeVisitor struct {
