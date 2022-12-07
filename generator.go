@@ -81,11 +81,12 @@ func titleCasing(s string, runeCaser func(rune) rune) string {
 
 var mockTemplate = `package {{ .PackageName }}
 
+{{ $iname := .Name }}
 type Mock{{.Name}} struct {
 	T testing.TB
 
 	{{ range $method := .Methods }}{{ $method.Name }}Mock func({{ range $arg := $method.Args }}{{$arg.Name}} {{$arg.Type}},{{ end }})({{ range $ret := $method.Returns }}{{$ret.Name}} {{$ret.Type}}, {{ end }})
-	{{ $method.Name }}Calls []{{ $method.Name | Untitle }}Call
+	{{ $method.Name }}Calls []{{ $iname | Untitle }}{{ $method.Name }}Call
 
 	{{ end }}
 }
@@ -94,30 +95,26 @@ func NewMock{{.Name}}(t testing.TB) *Mock{{.Name}} {
 	return &Mock{{.Name}}{T: t}
 }
 
-{{ $iname := .Name }}
 {{ range $method := .Methods }}
-type {{ $method.Name | Untitle }}Call struct {
-	{{ range $i, $arg := $method.Args }}{{ $arg.Name | Title }} {{$arg.Type}}
+type {{ $iname | Untitle }}{{ $method.Name }}Call struct {
+	{{ range $arg := $method.Args }}{{ $arg.Name | Title }} {{$arg.Type}}
 	{{ end }}
 	{{ range $i, $arg := $method.Returns }}Out{{$i}} {{$arg.Type}}
 	{{ end }}
 }
 
-func (v *Mock{{$iname}}) {{ $method.Name }}({{ range $arg := $method.Args }}{{$arg.Name}} {{$arg.Type}},{{ end }})({{ range $ret := $method.Returns }}{{$ret.Name}} {{$ret.Type}}, {{ end }}) {
-	if v.{{$method.Name}}Mock == nil {
-		msg := fmt.Sprintf("call to %T.{{$method.Name}}, but Mock{{$method.Name}} is not set", v)
-		if v.T == nil {
-			panic(msg)
-		}
-		require.Fail(v.T, msg)
+func (_v *Mock{{$iname}}) {{ $method.Name }}({{ range $arg := $method.Args }}{{$arg.Name}} {{$arg.Type}},{{ end }})({{ range $ret := $method.Returns }}{{$ret.Name}} {{$ret.Type}}, {{ end }}) {
+	if _v.{{$method.Name}}Mock == nil {
+		msg := fmt.Sprintf("call to %T.{{$method.Name}}, but Mock{{$method.Name}} is not set", _v)
+		panic(msg)
 	}
 	
-	v.{{ $method.Name }}Calls = append(v.{{ $method.Name }}Calls,  {{ $method.Name | Untitle }}Call{
+	_v.{{ $method.Name }}Calls = append(_v.{{ $method.Name }}Calls,  {{ $iname | Untitle }}{{ $method.Name }}Call{
 		{{ range $i, $arg:= $method.Args }}{{ $arg.Name | Title }}: {{$arg.Name}},
 		{{ end }}
 	})
-	{{ if $method.Returns}}{{ range $i, $arg := $method.Returns}}out{{ $i }}{{ if IsNotLastArgument $method.Returns $i }},{{ end }}{{ end }} := {{ else }}return {{ end }}v.{{ $method.Name }}Mock({{ range $arg := $method.Args }}{{$arg.Name}}, {{ end }})
-	{{ range $i, $arg := $method.Returns}}v.{{ $method.Name }}Calls[len(v.{{ $method.Name }}Calls)-1].Out{{ $i }} = out{{ $i }}{{ if IsNotLastArgument $method.Returns $i }}
+	{{ if $method.Returns}}{{ range $i, $arg := $method.Returns}}out{{ $i }}{{ if IsNotLastArgument $method.Returns $i }},{{ end }}{{ end }} := {{ else }}{{ end }}_v.{{ $method.Name }}Mock({{ range $arg := $method.Args }}{{$arg.Name}}, {{ end }})
+	{{ range $i, $arg := $method.Returns}}_v.{{ $method.Name }}Calls[len(_v.{{ $method.Name }}Calls)-1].Out{{ $i }} = out{{ $i }}{{ if IsNotLastArgument $method.Returns $i }}
 	{{else}}{{end}}{{ end }}
 	{{ if $method.Returns}}return {{ range $i, $arg := $method.Returns}}out{{ $i }}{{ if IsNotLastArgument $method.Returns $i }},{{ end }}{{ end }}{{ end }}
 }
