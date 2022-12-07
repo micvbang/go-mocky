@@ -31,44 +31,42 @@ writing to file /home/micvbang/go-mocky/examples/adder/mock_adder.go
 The generated code looks like this:
 
 ```go
-
 type MockAdder struct {
 	T testing.TB
 
 	AddMock  func() error
-	AddCalls []addCall
+	AddCalls []adderAddCall
 }
 
 func NewMockAdder(t testing.TB) *MockAdder {
 	return &MockAdder{T: t}
 }
 
-type addCall struct {
+type adderAddCall struct {
 	Out0 error
 }
 
-func (v *MockAdder) Add() error {
-	if v.AddMock == nil {
-		msg := fmt.Sprintf("call to %T.Add, but MockAdd is not set", v)
-		if v.T == nil {
-			panic(msg)
-		}
-		require.Fail(v.T, msg)
+func (_v *MockAdder) Add() error {
+	if _v.AddMock == nil {
+		msg := fmt.Sprintf("call to %T.Add, but MockAdd is not set", _v)
+		panic(msg)
 	}
 
-	v.AddCalls = append(v.AddCalls, addCall{})
-	out0 := v.AddMock()
-	v.AddCalls[len(v.AddCalls)-1].Out0 = out0
+	_v.AddCalls = append(_v.AddCalls, adderAddCall{})
+	out0 := _v.AddMock()
+	_v.AddCalls[len(_v.AddCalls)-1].Out0 = out0
 	return out0
 }
 ```
 
 That's it! We're now ready to mock Adder.
 
-Below there's a silly function called `ReturnAddError` which does nothing useful except returning the error returned by `Add`.
+Below there's a silly function called `DummyAddUser` which does nothing useful except returning an error when `Add()` fails.
 
 ```go
-func ReturnAddError(a Adder) error {
+// DummyAddUser is a dummy function which uses the Adder interface that we
+// wish to mock.
+func DummyAddUser(a Adder) error {
 	err := a.Add()
 	if err != nil {
 		return fmt.Errorf("failed to add: %w", err)
@@ -85,40 +83,31 @@ Since we have generated a mock for the `Adder` interface, we can easily write a 
 // TestReturnAddErrorErrors verifies that GiveValueToAdder returns an error
 // when Add fails, and returns nil Add does not fail.
 func TestReturnAddErrorErrors(t *testing.T) {
-	tests := map[string]struct {
-		expected error
-	}{
-		"no error":      {expected: nil},
-		"failed to add": {expected: fmt.Errorf("failed to add")},
+	expectedErr := fmt.Errorf("oh no, all is on fire!")
+
+	// Here we're defining the mock and its functionality.
+	mockAdder := adder.NewMockAdder(t)
+	mockAdder.AddMock = func() error {
+		return expectedErr
 	}
 
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			mockAdder := adder.NewMockAdder(t)
-			// Here we're defining the functionality of the mock.
-			mockAdder.AddMock = func() error {
-				return test.expected
-			}
+	// Verify that ReturnAddError returns the error returned by Add
+	got := adder.ReturnAddError(mockAdder)
+	require.ErrorIs(t, got, expectedErr)
 
-			// Verify that ReturnAddError returns the error returned by Add
-			got := adder.ReturnAddError(mockAdder)
-			require.ErrorIs(t, got, test.expected)
+	// If we want to be fancy, we can even see the history of the calls made
+	// to Add, including which arguments were given and which values were returned:
+	require.Equal(t, 1, len(mockAdder.AddCalls))
 
-			// If we want to be fancy, we can even see the history of the calls made
-			// to Add, including which arguments were given and which values were returned:
-			require.Equal(t, 1, len(mockAdder.AddCalls))
+	// Add has no arguments, but if it had had, they would be available on `call` as well
+	call := mockAdder.AddCalls[0]
 
-			// Add has no arguments, but if it had had, they would be available on `call` as well
-			call := mockAdder.AddCalls[0]
-
-			// Return value
-			require.ErrorIs(t, call.Out0, test.expected)
-		})
-	}
+	// We can check that the call to Add indeed contains the expectedErr.
+	require.ErrorIs(t, call.Out0, expectedErr)
 }
 ```
 
-The test shows how simple it is to define a mock/fake implementation of `Add()` to be used in our test.
+The test above shows how simple it is to define a mock/fake implementation of `Add()` to be used in our test.
 
 If you're into tracking the number of calls (or the arguments/return values), `go-mocky` helps you by keeping a log of these in the `AddCalls` slice.
 

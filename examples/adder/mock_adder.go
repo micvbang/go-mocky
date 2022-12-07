@@ -3,36 +3,31 @@ package adder
 import (
 	"fmt"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 type MockAdder struct {
 	T testing.TB
 
 	AddMock  func() error
-	AddCalls []addCall
+	AddCalls []adderAddCall
 }
 
 func NewMockAdder(t testing.TB) *MockAdder {
 	return &MockAdder{T: t}
 }
 
-type addCall struct {
+type adderAddCall struct {
 	Out0 error
 }
 
-func (v *MockAdder) Add() error {
-	if v.AddMock == nil {
-		msg := fmt.Sprintf("call to %T.Add, but MockAdd is not set", v)
-		if v.T == nil {
-			panic(msg)
-		}
-		require.Fail(v.T, msg)
+func (_v *MockAdder) Add() error {
+	if _v.AddMock == nil {
+		msg := fmt.Sprintf("call to %T.Add, but MockAdd is not set", _v)
+		panic(msg)
 	}
 
-	v.AddCalls = append(v.AddCalls, addCall{})
-	out0 := v.AddMock()
-	v.AddCalls[len(v.AddCalls)-1].Out0 = out0
+	_v.AddCalls = append(_v.AddCalls, adderAddCall{})
+	out0 := _v.AddMock()
+	_v.AddCalls[len(_v.AddCalls)-1].Out0 = out0
 	return out0
 }
