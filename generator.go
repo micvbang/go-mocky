@@ -83,16 +83,10 @@ var mockTemplate = `package {{ .PackageName }}
 
 {{ $iname := .Name }}
 type Mock{{.Name}} struct {
-	T testing.TB
-
 	{{ range $method := .Methods }}{{ $method.Name }}Mock func({{ range $arg := $method.Args }}{{$arg.Name}} {{$arg.Type}},{{ end }})({{ range $ret := $method.Returns }}{{$ret.Name}} {{$ret.Type}}, {{ end }})
 	{{ $method.Name }}Calls []{{ $iname | Untitle }}{{ $method.Name }}Call
 
 	{{ end }}
-}
-
-func NewMock{{.Name}}(t testing.TB) *Mock{{.Name}} {
-	return &Mock{{.Name}}{T: t}
 }
 
 {{ range $method := .Methods }}
